@@ -1,0 +1,1 @@
+sign_num,reward_type,reward_id,reward_count,is_loop,upd_dt

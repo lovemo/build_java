@@ -1,0 +1,30 @@
+public class GiftProduct {
+
+	@JsonProperty("product_id")
+	private int productID;
+
+	@JsonProperty("product_name")
+	private String productName;
+
+	@JsonProperty("product_price")
+	private int productPrice;
+
+	@JsonProperty("gift_id")
+	private int giftID;
+
+	@JsonProperty("gift_count")
+	private int giftCount;
+
+	@JsonProperty("animation_type")
+	private int animationType;
+
+	@JsonProperty("personal_animation_type")
+	private int personalAnimationType;
+
+	@JsonProperty("is_svga")
+	private int svga;
+
+	@JsonProperty("upd_dt")
+	private int updDT;
+
+}

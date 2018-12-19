@@ -1,0 +1,11 @@
+<resultMap id="GiftShopDOMap" type="GiftShopDO">
+	<result property="productID" column="product_id" />
+	<result property="shopGroupID" column="shop_group_id" />
+	<result property="productWeight" column="product_weight" />
+	<result property="beginDT" column="begin_dt" />
+	<result property="endDT" column="end_dt" />
+	<result property="productIsValid" column="product_is_valid" />
+	<result property="new" column="is_new" />
+	<result property="remark" column="remark" />
+	<result property="updDT" column="upd_dt" />
+</resultMap>

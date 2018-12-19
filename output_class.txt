@@ -1,0 +1,15 @@
+public class AttendRewardInfo {
+
+	private int signNum;
+
+	private int rewardType;
+
+	private int rewardID;
+
+	private int rewardCount;
+
+	private int loop;
+
+	private int updDT;
+
+}

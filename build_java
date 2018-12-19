@@ -1,0 +1,202 @@
+#!/usr/bin/env php
+
+<?php
+
+
+if (empty($argv[1]) || empty($argv[2])) {
+    $info = [
+        '  desc   根据sql创建语句生成java类属性、jersey注解类、mapper映射、sql列',
+        '  e.g.   php build_java -type class',
+        '  -type  转化的类型: 
+                    class:  转化为普通类
+                    jersey: 转化为带有@JsonProperty注解的类属性
+                    mapper: 转化为mapper映射结果集
+                    sql:    生成sql列'
+    ];
+    $content = implode("\n", $info);
+    printf($content . "\n\n");
+    exit;
+}
+
+
+$buildString = file_get_contents(__DIR__ . '/input.txt');
+if (empty($buildString)) {
+    exit("转化的sql内容文件不能为空，请先创建input.txt文件, 并将sql创建语句写入到文件中" . PHP_EOL);
+}
+
+$command = $argv[2];
+if ($command == 'class') {
+    $output = parseClass($buildString);
+} elseif ($command == 'mapper') {
+    $output = parseMapper($buildString);
+} elseif ($command == 'sql') {
+    $output = parseSql($buildString);
+} elseif ($command == 'jersey') {
+    $output = parseJersey($buildString);
+}
+
+if (empty($output)) {
+    exit("转化失败，请重试" . PHP_EOL);
+}
+
+file_put_contents(__DIR__ . "/output_{$command}.txt", $output);
+
+echo "转化成功，请查看output_{$command}.txt文件" . PHP_EOL;
+
+function parseClass($string = '') {
+    $result = [];
+
+    $pattern = "/`(.*?)`\s(.*?)\s[\s\S]*?/";
+    preg_match_all($pattern, $string, $result);
+    $names = $result[1];
+    $types = $result[2];
+    $tableName = buildClassName($names[0]);
+    unset($names[0]);
+    unset($types[0]);
+
+    $parserString = '';
+    $visitAuth = 'private';
+
+    if (!empty($names)) {
+        $parserString .= "public class {$tableName} {" . PHP_EOL;
+        foreach ($names as $key => $value) {
+            $typeName = buildType($types[$key]);
+            $propertyName = camelize($value);
+            $parserString .= PHP_EOL . "\t" . "{$visitAuth} {$typeName} {$propertyName};" . PHP_EOL;
+        }
+        $parserString .= PHP_EOL . "}";
+    }
+
+    return $parserString;
+}
+
+function parseMapper($string = '') {
+    $result = [];
+
+    $pattern = "/`(.*?)`\s(.*?)\s[\s\S]*?/";
+    preg_match_all($pattern, $string, $result);
+
+    $names = $result[1];
+    $tableName = buildClassName($names[0]);
+    unset($names[0]);
+
+    $parserString = '';
+
+    if (!empty($names)) {
+        $parserString .= "<resultMap id=\"{$tableName}DOMap\" type=\"{$tableName}DO\">" . PHP_EOL;
+        foreach ($names as $key => $value) {
+            $propertyName = camelize($value);
+            $parserString .= "\t" . "<result property=\"{$propertyName}\" column=\"{$value}\" />" . PHP_EOL;
+        }
+        $parserString .= "</resultMap>";
+    }
+
+    return $parserString;
+}
+
+function parseSql($string = '') {
+    $result = [];
+
+    $pattern = "/`(.*?)`\s(.*?)\s[\s\S]*?/";
+    preg_match_all($pattern, $string, $result);
+
+    $names = $result[1];
+    unset($names[0]);
+
+    $parserString = '';
+
+    if (!empty($names)) {
+        $parserString = implode(',', $names);
+    }
+
+    return $parserString;
+}
+
+function parseJersey($string = '') {
+    $result = [];
+
+    $pattern = "/`(.*?)`\s(.*?)\s[\s\S]*?/";
+    preg_match_all($pattern, $string, $result);
+    $names = $result[1];
+    $types = $result[2];
+    $tableName = buildClassName($names[0]);
+    unset($names[0]);
+    unset($types[0]);
+
+    $parserString = '';
+    $visitAuth = 'private';
+
+    if (!empty($names)) {
+        $parserString .= "public class {$tableName} {" . PHP_EOL;
+        foreach ($names as $key => $value) {
+            $typeName = buildType($types[$key]);
+            $propertyName = camelize($value);
+            $parserString .= PHP_EOL . "\t" . "@JsonProperty(\"{$value}\")";
+            if ($typeName == 'Date') {
+                $parserString .= PHP_EOL . "\t" . "@JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\", locale = \"zh\", timezone = \"GMT+8\")";
+            }
+            $parserString .= PHP_EOL . "\t" . "{$visitAuth} {$typeName} {$propertyName};" . PHP_EOL;
+        }
+        $parserString .= PHP_EOL . "}";
+    }
+
+    return $parserString;
+}
+
+
+function buildType($string = '') {
+    $string = strtolower($string);
+
+    if(strpos($string,'int') !== false) {
+        return 'int';
+    }
+
+    if(strpos($string,'char') !== false || strpos($string,'text') !== false) {
+        return 'String';
+    }
+
+    if(strpos($string,'date') !== false) {
+        return 'Date';
+    }
+}
+
+function buildClassName($string = '') {
+    $tableName = camelize($string);
+    if(preg_match("/^t/", $tableName)) {
+        $tableName = preg_replace("/^t/",'',$tableName);
+    }
+    return $tableName;
+}
+
+function camelize($uncamelized_words, $separator='_') {
+
+   $replaces = [
+        'get',
+        'is'
+    ];
+
+    foreach ($replaces as $value) {
+        if(preg_match("/^{$value}_/", strtolower($uncamelized_words))) {
+            $uncamelized_words = preg_replace("/^{$value}_/","",strtolower($uncamelized_words));
+        }
+    }
+
+    $uncamelized_words = $separator. str_replace($separator, " ", strtolower($uncamelized_words));
+    $string = ltrim(str_replace(" ", "", ucwords($uncamelized_words)), $separator );
+
+    $trans = [
+        'dt',
+        'id'
+    ];
+
+    foreach ($trans as $value) {
+        if(preg_match("/{$value}$/", strtolower($string))) {
+            $string = preg_replace("/" . ucwords($value) . "$/",strtoupper($value),$string);
+        }
+    }
+
+    return $string;
+}
+
+
+
