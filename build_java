@@ -5,12 +5,12 @@
 
 if (empty($argv[1]) || empty($argv[2])) {
     $info = [
-        '  desc   根据sql创建语句生成java类属性、jersey注解类、mapper映射、sql列',
+        '  desc   根据sql创建语句生成java类属性、jersey注解类、mybatis mapper映射、sql列',
         '  e.g.   php build_java -type class',
         '  -type  转化的类型: 
                     class:  转化为普通类
                     jersey: 转化为带有@JsonProperty注解的类属性
-                    mapper: 转化为mapper映射结果集
+                    mapper: 转化为mybatis mapper映射结果集
                     sql:    生成sql列'
     ];
     $content = implode("\n", $info);

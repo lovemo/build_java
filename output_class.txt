@@ -1,15 +1,15 @@
-public class AttendRewardInfo {
+public class GiftShop {
 
-	private int signNum;
+	private int productID;
 
-	private int rewardType;
+	private int shopGroupID;
 
-	private int rewardID;
+	private int productWeight;
 
-	private int rewardCount;
+	private int new;
 
-	private int loop;
+	private String remark;
 
-	private int updDT;
+	private Date updDT;
 
 }

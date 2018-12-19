@@ -2,11 +2,8 @@ CREATE TABLE `t_gift_shop` (
   `product_id` int(10) unsigned NOT NULL,
   `shop_group_id` int(10) unsigned NOT NULL,
   `product_weight` int(10) unsigned NOT NULL,
-  `begin_dt` int(10) unsigned NOT NULL,
-  `end_dt` int(10) unsigned NOT NULL,
-  `product_is_valid` tinyint(3) unsigned NOT NULL,
   `is_new` tinyint(3) unsigned NOT NULL,
   `remark` varchar(200) NOT NULL,
-  `upd_dt` int(10) unsigned NOT NULL,
+  `upd_dt` datetime NOT NULL,
   PRIMARY KEY (`product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
