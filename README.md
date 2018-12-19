@@ -28,7 +28,7 @@ php build_java
                     sql:    生成sql列
 ```
 ### 生成对应结果文件
-```
+```java
 // class
 public class GiftShop {
 
